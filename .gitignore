@@ -1,1 +1,33 @@
-.env
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.env/
+*.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode
+.vscode/
+
+# macOS / Linux / Windows
+.DS_Store
+Thumbs.db
+
+# Arquivos de log
+*.log
+
+# Arquivos do Anaconda/Spyder
+.spyderproject
+.spyproject
+
+# Arquivos do sistema
+*.swp
+*.bak
+*~.env
