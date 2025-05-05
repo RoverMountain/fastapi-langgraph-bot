@@ -40,3 +40,33 @@ graph = graph.compile()
 async def perguntar(pergunta: PerguntaRequest):
     resultado = await graph.ainvoke({"mensagem": pergunta.mensagem})
     return {"resposta": resultado["resposta"]}
+
+from fastapi import Request
+import httpx
+import os
+
+# Endpoint Webhook
+@app.post("/webhook")
+async def whatsapp_webhook(request: Request):
+    data = await request.json()
+    
+    try:
+        message = data['message']
+        phone = data['phone']
+    except KeyError:
+        return {"status": "invalid payload"}
+
+    # Processa com LangGraph
+    resposta_state = await graph.ainvoke({"mensagem": message})
+    resposta = resposta_state["resposta"]
+
+    # Monta URL correta da Z-API
+    zap_api_url = f"https://api.z-api.io/instances/{'3E07F87D8FA3703AE7AE96E82C2DBF10'}/token/{'0EFC31466D9AE414CB5B9E2A'}/send-messages"
+
+    async with httpx.AsyncClient() as client:
+        await client.post(zap_api_url, json={
+            "phone": phone,
+            "message": resposta
+        })
+
+    return {"status": "ok"}
