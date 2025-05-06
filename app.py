@@ -48,25 +48,34 @@ import os
 # Endpoint Webhook
 @app.post("/webhook")
 async def whatsapp_webhook(request: Request):
-    data = await request.json()
-    
-    try:
-        message = data['message']
-        phone = data['phone']
-    except KeyError:
+    payload = await request.json()
+
+    # Garante que é um evento de mensagem recebida
+    if payload.get("event") != "message:received":
+        return {"status": "ignored"}
+
+    data = payload.get("data", {})
+    message = data.get("text")
+    phone = data.get("from")
+
+    if not message or not phone:
         return {"status": "invalid payload"}
 
-    # Processa com LangGraph
+    # Gera resposta com LangGraph
     resposta_state = await graph.ainvoke({"mensagem": message})
     resposta = resposta_state["resposta"]
 
-    # Monta URL correta da Z-API
-    zap_api_url = f"https://api.z-api.io/instances/{'3E07F87D8FA3703AE7AE96E82C2DBF10'}/token/{'0EFC31466D9AE414CB5B9E2A'}/send-messages"
+    # Envia resposta de volta usando API Whapi
+    whapi_url = "https://gate.whapi.cloud/messages/text"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('WHAPI_API_KEY')}",
+        "Content-Type": "application/json"
+    }
 
     async with httpx.AsyncClient() as client:
-        await client.post(zap_api_url, json={
-            "phone": phone,
-            "message": resposta
+        await client.post(whapi_url, headers=headers, json={
+            "to": phone,
+            "body": resposta
         })
 
     return {"status": "ok"}
