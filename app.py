@@ -50,6 +50,8 @@ import os
 async def whatsapp_webhook(request: Request):
     payload = await request.json()
 
+    print("Mensagem recebida no webhook:", payload)  # Isso aparecerá no log do Render
+
     # Garante que é um evento de mensagem recebida
     if payload.get("event") != "message:received":
         return {"status": "ignored"}
