@@ -64,7 +64,7 @@ async def whatsapp_webhook(request: Request):
         return {"status": "no message"}
 
     message_data = messages[0]
-    message = message_data.get("body")
+    message = message_data.get("text", {}).get("body")
     phone = message_data.get("from")
 
     if not message or not phone:
