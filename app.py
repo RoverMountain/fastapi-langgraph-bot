@@ -50,15 +50,20 @@ import os
 async def whatsapp_webhook(request: Request):
     payload = await request.json()
 
-    print("Mensagem recebida no webhook:", payload)  # Isso aparecerá no log do Render
+    print("Mensagem recebida no webhook:", payload)  # Log no Render
 
-    # Garante que é um evento de mensagem recebida
-    if payload.get("event") != "message:received":
+    # Verifica se é um evento do tipo mensagem recebida
+    event_type = payload.get("event", {}).get("event")
+    if event_type != "post":
         return {"status": "ignored"}
 
-    data = payload.get("data", {})
-    message = data.get("text")
-    phone = data.get("from")
+    messages = payload.get("messages", [])
+    if not messages:
+        return {"status": "no message"}
+
+    message_data = messages[0]
+    message = message_data.get("body")
+    phone = message_data.get("from")
 
     if not message or not phone:
         return {"status": "invalid payload"}
@@ -67,7 +72,7 @@ async def whatsapp_webhook(request: Request):
     resposta_state = await graph.ainvoke({"mensagem": message})
     resposta = resposta_state["resposta"]
 
-    # Envia resposta de volta usando API Whapi
+    # Envia resposta de volta via Whapi
     whapi_url = "https://gate.whapi.cloud/messages/text"
     headers = {
         "Authorization": f"Bearer {os.getenv('WHAPI_API_KEY')}",
