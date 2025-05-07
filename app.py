@@ -7,6 +7,7 @@ from langchain_openai import ChatOpenAI
 from typing import TypedDict
 import os
 import httpx
+import json
 from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente
@@ -49,7 +50,7 @@ async def perguntar(pergunta: PerguntaRequest):
 @app.post("/webhook")
 async def whatsapp_webhook(request: Request):
     payload = await request.json()
-    print("Mensagem recebida no webhook:", payload) # Log no Render
+    print("Webhook recebido do Whapi:\n", json.dumps(payload, indent=2, ensure_ascii=False)) # Log no Render
 
 # Verifica se é um evento do tipo mensagem recebida
     event_type = payload.get("event", {}).get("event")
