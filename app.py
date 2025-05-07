@@ -67,6 +67,11 @@ async def whatsapp_webhook(request: Request):
     message = message_data.get("text", {}).get("body")
     phone = message_data.get("from")
 
+# Ignorar mensagens enviadas por você mesmo (from_me = True)
+    if message_data.get("from_me", False):
+        print("Mensagem enviada por mim mesmo ignorada.")
+        return {"status": "ignored_self_message"}
+
     if not message or not phone:
         print("Payload inválido: mensagem ou telefone ausente.")
         return {"status": "invalid payload"}
